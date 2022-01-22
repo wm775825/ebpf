@@ -22,11 +22,15 @@ async fn main() {
     tracing::subscriber::set_global_default(subscriber).unwrap();
 
     let mut loaded = Loader::load(probe_code()).expect("error on Loader::load");
-    loaded
-        .kprobe_mut("do_sys_openat2")
-        .expect("error on Loaded::kprobe_mut")
-        .attach_kprobe("do_sys_openat2", 0)
-        .expect("error on KProbe::attach_kprobe");
+    // loaded
+    //     .kprobe_mut("do_sys_openat2")
+    //     .expect("error on Loaded::kprobe_mut")
+    //     .attach_kprobe("do_sys_openat2", 0)
+    //     .expect("error on KProbe::attach_kprobe");
+    for kp in loaded.kprobes_mut() {
+        kp.attach_kprobe(kp.name().as_str(), 0)
+            .expect(format!("error on attach_kprobe to {}", kp.name()).as_str());
+    }
 
     while let Some((map_name, events)) = loaded.events.next().await {
         if map_name == "OPEN_PATHS" {
