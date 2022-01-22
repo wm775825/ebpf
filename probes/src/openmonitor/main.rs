@@ -1,5 +1,6 @@
 #![no_std]
 #![no_main]
+
 use probes::openmonitor::*;
 
 // use one of the preludes
@@ -40,9 +41,9 @@ static mut OPEN_PATHS: PerfMap<OpenPath> = PerfMap::with_max_entries(1024);
 fn do_sys_openat2(regs: Registers) {
     let mut path = OpenPath::default();
     unsafe {
-        let filename = regs.param2() as *const u8;
+        let filename = regs.parm2() as *const u8;
         if bpf_probe_read_str(
-            path.filename.as_mut_str() as *mut _,
+            path.filename.as_mut_ptr() as *mut _,
             path.filename.len() as u32,
             filename as *const _,
         ) <= 0 {
